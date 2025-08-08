@@ -1,0 +1,103 @@
+﻿@{
+    Layout = "~/Views/Shared/layout2.cshtml";
+}
+@model Laundry.Models.Booking
+
+@* @model Laundry.Models.LocationModel *@
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<h2 class="text-center">Select Your Location</h2>
+
+@* <form asp-action="Map" method="post"> *@
+
+
+
+<div id="map" style="height: 500px;" class="my-3"></div>
+
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Continue...</button>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Booking</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Home" asp-action="Booking" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="Latitude" name="Latitude" />
+                    <input type="hidden" id="Longitude" name="Longitude" />
+
+                    <input value="@accessor.HttpContext.Session.GetString("name")" readonly class="form-control form-control-lg fs-5 mb-3" />
+                    <input value="@accessor.HttpContext.Session.GetString("email")" readonly class="form-control form-control-lg fs-5 mb-3" />
+                    <input value="@accessor.HttpContext.Session.GetString("phone")" readonly class="form-control form-control-lg fs-5 mb-3" />
+
+                    <input asp-for="Address" placeholder="Enter Address" required class="form-control form-control-lg fs-5 mb-3" />
+                    <input asp-for="Date" type="date" min="@DateTime.Today.ToString("yyyy-MM-dd")" class="form-control form-control-lg fs-5 mb-3" required />
+                    <input asp-for="Time" type="time" class="form-control form-control-lg fs-5 mb-3" required />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Add Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@* </form> *@
+
+<script>
+    var map = L.map('map').setView([0, 0], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    var marker = L.marker([0, 0], { draggable: true }).addTo(map)
+        .bindPopup("📍 Location").openPopup();
+
+    function updateLatLngInputs(lat, lng) {
+        document.getElementById("Latitude").value = lat;
+        document.getElementById("Longitude").value = lng;
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            var lat = position.coords.latitude;
+            var lon = position.coords.longitude;
+            map.setView([lat, lon], 15);
+            marker.setLatLng([lat, lon]).bindPopup("📍 You are here").openPopup();
+            updateLatLngInputs(lat, lon);
+        }, function () {
+            map.setView([24.8607, 67.0011], 13);
+            marker.setLatLng([24.8607, 67.0011]);
+            updateLatLngInputs(24.8607, 67.0011);
+        });
+    } else {
+        map.setView([24.8607, 67.0011], 13);
+        marker.setLatLng([24.8607, 67.0011]);
+        updateLatLngInputs(24.8607, 67.0011);
+    }
+
+    L.Control.geocoder({
+        defaultMarkGeocode: false
+    })
+        .on('markgeocode', function (e) {
+            var center = e.geocode.center;
+            map.setView(center, 15);
+            marker.setLatLng(center).bindPopup(e.geocode.name).openPopup();
+            updateLatLngInputs(center.lat, center.lng);
+        })
+        .addTo(map);
+
+    marker.on("dragend", function (e) {
+        var latlng = marker.getLatLng();
+        updateLatLngInputs(latlng.lat, latlng.lng);
+    });
+</script>

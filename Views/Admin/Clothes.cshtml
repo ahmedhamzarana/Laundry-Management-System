@@ -1,0 +1,45 @@
+﻿@model List<Laundry.Models.Clothes>
+@{
+    int i = 1;
+}
+<h1>Customers</h1>
+<h1 class="mt-4">Clothes</h1>
+<a asp-controller="Admin" asp-action="AddClothes" class="btn btn-success">Add Clothes</a>
+<table class="table-bordered table-hovered table-striped table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Ttile</th>
+            <th>Max Quantity</th>
+            <th>Services</th>
+            <th>Image</th>
+        </tr>
+    </thead>
+    <tbody id="customers">
+        @foreach (var clothes in Model)
+        {
+            <tr>
+                <td>@i</td>
+                <td>@clothes.Title</td>
+                <td>@clothes.Quantity</td>
+                <td>
+                    <strong>
+                        @string.Join(", ", clothes.ClothesServices
+                                 .Where(x => x.ClothesId == clothes.Id)
+                                 .Select(x => x.Services.Name))
+                    </strong>
+                </td>
+
+                <td><img src="~/clothes/@clothes.Image" height="100" /></td>
+            </tr>
+            i++;
+        }
+    </tbody>
+</table>
+
+<script>
+    @if (TempData["success"] != null)
+    {
+        <text>toastr.success('@TempData["success"]');</text>
+    }
+</script>

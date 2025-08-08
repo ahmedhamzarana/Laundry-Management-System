@@ -1,0 +1,62 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model Laundry.Models.Customer
+
+<div class="container-fluid">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">Customer Registration</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post">
+                            <input type="hidden" asp-for="@Model.Id"/>
+                            <div class="mb-3">
+                                <label asp-for="Name" class="form-label">Name </label>
+                                <input asp-for="Name" class="form-control">
+                                <span asp-validation-for="Name"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Address" class="form-label">Address </label>
+                                <input asp-for="Address" class="form-control">
+                                <span asp-validation-for="Address"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="City" class="form-label">City </label>
+                                <input asp-for="City" class="form-control">
+                                <span asp-validation-for="City"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Phone" class="form-label">Phone </label>
+                                <input asp-for="Phone" class="form-control">
+                                <span asp-validation-for="Phone"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label">Email </label>
+                                <input asp-for="Email" class="form-control">
+                                <span asp-validation-for="Email"></span>
+                            </div>
+
+
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    <script>
+        @if (TempData["success"] != null)
+        {
+            <text>toastr.success('@TempData["success"]');</text>
+        }
+    </script>
+
+

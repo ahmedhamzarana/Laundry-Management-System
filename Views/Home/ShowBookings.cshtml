@@ -1,0 +1,233 @@
+﻿@{
+    Layout = "~/Views/Shared/layout2.cshtml";
+}
+
+@model List<Laundry.Models.Booking>
+<style>
+    .payment-btn:hover {
+        cursor: pointer;
+    }
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function getAddress(lat, lng, elementId) {
+        $.ajax({
+            url: '/Home/GetAddress',
+            data: {
+                lat: lat,
+                lon: lng
+            },
+            type: 'GET',
+            success: function (res) {
+                $('#' + elementId).text(res.display_name);
+            },
+            error: function () {
+                $('#' + elementId).text("Address not found");
+            }
+        });
+    }
+
+</script>
+
+@if (Model.Any())
+{
+    <div class="main m-5">
+        <h1 class="text-center">Your Bookings...</h1>
+        <table class="table table-striped table-hover table-bordered mt-4">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Location</th>
+                    <th>Pick up Date & Time</th>
+                    <th>Total Price</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var bookings in Model)
+                {
+                    var lat = bookings.Latitude;
+                    var lng = bookings.Longitude;
+                    var id = "loc_" + bookings.Id;
+
+                    <tr>
+                        <td>@bookings.Id</td>
+                        <td>@bookings.User.Name</td>
+                        <td>@bookings.User.Email</td>
+                        <td>@bookings.Address</td>
+                        <td id="@id">Loading...</td>
+                        <td>@bookings.Date - @bookings.Time</td>
+                        <td>
+                            <strong>@bookings.BookingClothes.Where(x => x.BookingId == bookings.Id).Sum(x => x.Services.Price)</strong>
+                        </td>
+                        <td>
+                            @if (bookings.Status == Booking._Status.Pending)
+                            {
+                                <span class="badge bg-warning">Pending</span>
+
+                            }
+                            else if (bookings.Status == Booking._Status.Ready)
+                            {
+                                <span class="badge bg-warning">Ready</span>
+
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Delivered</span>
+                            }
+
+                        </td>
+                        <td>
+                            @if (bookings.Status != Booking._Status.Pending)
+                            {
+                                @if (bookings.Payment == null)
+                                {
+                                    <span data-bs-toggle="modal" data-bs-target="#googleRoleModal" class="badge bg-primary payment-btn">Payment</span>
+
+                                    <div class="modal fade" id="googleRoleModal" tabindex="-1" aria-labelledby="googleRoleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="googleRoleModalLabel">Payment Method:</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body d-flex justify-content-around">
+                                                    <form asp-controller="Home" asp-action="PaymentByCash" asp-route-id="@bookings.Id"><input type="submit" value="Cash" class="btn btn-primary"/></form>
+                                                    @* <a class="btn btn-outline-primary" href="@Url.Action("GoogleLogin", "Account", new { role = "user" })">Cash</a> *@
+                                                    <input type="hidden" value="@bookings.Id" id="bookingId" />
+                                                    <button class="btn btn-outline-success" id="payment">Online</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else if(bookings.Payment.PaymentStatus == Payment.Status.Pending)
+                                {
+                                    <span class="badge bg-success">Pending (COD)</span>
+                                    
+                                }else{
+
+                                    <span class="badge bg-success">Paid</span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary">Wait for clothes to ready</span>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="9">
+                            <div class="p-3 border rounded bg-light">
+                                @* <h5><strong>Clothes & Services:</strong></h5> *@
+
+                                <div class="row fw-bold border-bottom pb-2 mb-2">
+                                    <div class="col-md-6">Clothes & Service</div>
+                                    <div class="col-md-2 text-end">Price</div>
+                                    <div class="col-md-4 text-end">Status</div>
+                                </div>
+
+                                @foreach (var bc in bookings.BookingClothes)
+                                {
+                                    var serviceName = bc.Services.Name;
+                                    <div class="row align-items-center mb-2">
+                                        <!-- Clothes + Service -->
+                                        <div class="col-md-6">
+                                            <strong>@bc.Clothes.Title</strong> - @bc.Services.Name
+                                        </div>
+
+                                        <!-- Price -->
+                                        <div class="col-md-2 text-end">
+                                            Rs. @bc.Services.Price
+                                        </div>
+
+                                        <!-- Status -->
+                                        <div class="col-md-4 text-end">
+                                            @if (bc.Status == 0)
+                                            {
+                                                <span class="badge bg-warning">Pending</span>
+                                            }
+                                            else if (bc.Status == 1)
+                                            {
+                                                <span class="badge bg-info">@serviceName (In Service)</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Ready</span>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                        </td>
+                    </tr>
+
+
+                    <script>
+                        getAddress(@lat, @lng, "@id");
+                    </script>
+                }
+
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <h1 class="text-center mt-5">No bookings found. Ready to make your first one?</h1>
+}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    var stripe = Stripe("@ViewBag.PublishableKey");
+
+    $(document).ready(function () {
+        $("#payment").click(function () {
+            var bookingId = $("#bookingId").val();
+            // alert(seminarId);
+            // alert(price);
+            // return;
+            $.ajax({
+                url: "/Home/Payment",
+                type: "POST",
+                data: {
+                    bookingId: bookingId,
+                },
+                success: function (session) {
+                    if (session.error) {
+                        // Swal.fire({
+                        //     title: 'Booking Error!',
+                        //     text: session.error,
+                        //     icon: 'error',
+                        //     confirmButtonText: 'Okay',
+                        // })
+                        toastr.error(session.error);
+                    } else {
+                        stripe.redirectToCheckout({ sessionId: session.id });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                    console.error("AJAX Error:", xhr);
+                    console.error("AJAX Error:", status);
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+    @if (TempData["success"] != null)
+    {
+        <text>toastr.success('@TempData["success"]');</text>
+    }
+    @if (TempData["error"] != null)
+    {
+        <text>toastr.error('@TempData["error"]');</text>
+    }
+</script>

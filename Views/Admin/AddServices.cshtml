@@ -1,0 +1,59 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model Laundry.Models.Services
+
+<div class="container-fluid">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">Add Service Here...</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label asp-for="Name" class="form-label">Name </label>
+                                <input asp-for="Name" class="form-control">
+                                <span asp-validation-for="Name"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Price" class="form-label">Price</label>
+                                <input asp-for="Price" class="form-control">
+                                <span asp-validation-for="Price"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Description" class="form-label">Description</label>
+                                <input asp-for="Description" class="form-control">
+                                <span asp-validation-for="Description"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label  asp-for="Image" class="form-label">Image </label>
+                                <input type="file" asp-for="Image" class="form-control">
+                                <span asp-validation-for="Image"></span>
+                            </div>
+
+                          
+
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    <script>
+        @if (TempData["success"] != null)
+        {
+            <text>toastr.success('@TempData["success"]');</text>
+        }
+        @if (TempData["error"] != null)
+        {
+            <text>toastr.error('@TempData["error"]');</text>
+        }
+    </script>
+
+

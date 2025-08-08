@@ -1,0 +1,336 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model List<Laundry.Models.Booking>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function getAddress(lat, lng, elementId) {
+        $.ajax({
+            url: '/Home/GetAddress',
+            data: {
+                lat: lat,
+                lon: lng
+            },
+            type: 'GET',
+            success: function (res) {
+                $('#' + elementId).text(res.display_name);
+            },
+            error: function () {
+                $('#' + elementId).text("Address not found");
+            }
+        });
+    }
+
+</script>
+
+@if (Model.Any())
+{
+    <div class="main m-5">
+        <h1 class="text-center">Bookings...</h1>
+        <h1 class="text-center mt-4">Bookings...</h1>
+        <table class="table table-striped table-hover table-bordered mt-4">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Location</th>
+                    <th>Pick up Date & Time</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th>Invoice</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var bookings in Model)
+                {
+                    var lat = bookings.Latitude;
+                    var lng = bookings.Longitude;
+                    var id = "loc_" + bookings.Id;
+
+                    <tr>
+                        <td>@bookings.Id</td>
+                        <td>@bookings.User.Name</td>
+                        <td>@bookings.Address</td>
+                        <td id="@id">Loading...</td>
+                        <td>@bookings.Date - @bookings.Time</td>
+                        <td>
+                            <div class="d-flex gap-2 align-items-center flex-wrap">
+                                @if (bookings.Status == Booking._Status.Pending)
+                                {
+                                    <span class="badge bg-warning">Pending</span>
+                                    @* <form asp-controller="Admin" asp-action="BookingReady" method="post" class="d-inline"> *@
+                                    <input type="hidden" name="readyBookingId" id="bookingId" value="@bookings.Id" />
+                                    <input type="hidden" name="readyUserId" value="@bookings.User.Id" />
+                                    <input type="submit" value="Ready" class="btn btn-success btn-sm ready-btn" />
+                                    @* </form> *@
+                                }
+                                else if (bookings.Status == Booking._Status.Ready)
+                                {
+                                    <span class="badge bg-warning">Ready</span>
+                                    <form asp-controller="Admin" asp-action="BookingDelivered" method="post" class="d-inline">
+                                        <input type="hidden" name="bookingId" value="@bookings.Id" />
+                                        <input type="hidden" name="userId" value="@bookings.User.Id" />
+                                        <input type="submit" value="Delivered" class="btn btn-success btn-sm" />
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Delivered</span>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2 align-items-center flex-wrap">
+                                @if (bookings.Payment == null)
+                                {
+                                    <span class="badge bg-warning">Pending (No update from the user)</span>
+                                }
+                                else if (bookings.Payment.PaymentStatus == Payment.Status.Completed)
+                                {
+                                    <span class="badge bg-success">Paid</span>
+                                }
+                                else if (bookings.Payment.PaymentStatus == Payment.Status.Pending)
+                                {
+                                    <span class="badge bg-warning">Pending</span>
+
+                                    <form asp-controller="Admin" asp-action="PaidDelivery" method="post" class="d-inline">
+                                        <input type="hidden" name="paymentId" value="@bookings.Payment.Id" />
+                                        <input type="hidden" name="userId" value="@bookings.User.Id" />
+                                        <input type="submit" value="Paid" class="btn btn-success btn-sm" />
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Failed</span>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <!-- Trigger Button -->
+                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#invoiceModal_@bookings.Id">
+                                Send Invoice
+                            </button>
+                            <!-- Bootstrap Modal -->
+                            <div class="modal fade" id="invoiceModal_@bookings.Id" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="invoiceModalLabel">Invoice Preview - Booking #@bookings.Id</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p><strong>Name:</strong> @bookings.User.Name</p>
+                                            <p><strong>Address:</strong> @bookings.Address</p>
+                                            <p><strong>Pickup Date & Time:</strong> @bookings.Date.ToShortDateString() @bookings.Time</p>
+                                            <p><strong>Total Amount:</strong> @bookings.BookingClothes.Sum(x => x.Services.Price)</p>
+                                            <p><strong>Payment Status:</strong> @(bookings.Payment != null ? bookings.Payment.PaymentStatus : "Pending (No Update...)")</p>
+
+
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Cloth</th>
+                                                        <th>Service</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var bc in bookings.BookingClothes)
+                                                    {
+                                                        <tr>
+                                                            <td>@bc.Clothes.Title</td>
+                                                            <td>@bc.Services.Name</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <form asp-controller="Admin" asp-action="SendInvoice" method="post">
+                                                <input type="hidden" name="bookingId" value="@bookings.Id" />
+                                                <input type="hidden" name="userId" value="@bookings.User.Id" />
+                                                <button type="submit" class="btn btn-primary">Confirm & Send Invoice</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="8">
+                            <div class="p-3 border rounded bg-light">
+                                <div class="row fw-bold border-bottom pb-2 mb-2">
+                                    <div class="col-md-5">Clothes & Service</div>
+                                    <div class="col-md-4 ">Price</div>
+                                    <div class="col-md-3 text-end">Status</div>
+                                </div>
+
+                                @* <h5><strong>Clothes & Services:</strong></h5> *@
+                                <ul class="list-group list-group-flush">
+                                    @foreach (var bc in bookings.BookingClothes)
+                                    {
+                                        var serviceName = bc.Services.Name;
+                                        <li class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>@bc.Clothes.Title</strong> - @bc.Services.Name
+                                                </div>
+                                                <div class="text-end">
+                                                    Rs. @bc.Services.Price
+                                                </div>
+                                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                                    @if (bc.Status == 0)
+                                                    {
+                                                        <span class="badge bg-warning">Pending</span>
+                                                        <form asp-controller="Admin" asp-action="InService" method="post" class="d-inline">
+                                                            <input type="hidden" name="bookingClothesId" value="@bc.Id" />
+                                                            <input type="hidden" name="userId" value="@bc.Booking.User.Id" />
+                                                            <input type="submit" value="@serviceName" class="btn btn-success btn-sm" />
+                                                        </form>
+                                                    }
+                                                    else if (bc.Status == 1)
+                                                    {
+                                                        <span class="badge bg-warning">@serviceName</span>
+                                                        <form asp-controller="Admin" asp-action="Ready" method="post" class="d-inline">
+                                                            <input type="hidden" name="bookingClothesId" value="@bc.Id" />
+                                                            <input type="hidden" name="userId" value="@bc.Booking.User.Id" />
+                                                            <input type="submit" value="Ready" class="btn btn-primary btn-sm" />
+                                                        </form>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-success">Ready</span>
+                                                    }
+
+                                                    @if (bc.Barcode == null)
+                                                    {
+                                                        <form asp-controller="Admin" asp-action="GenerateBarcode" method="post" class="d-inline">
+                                                            <input type="hidden" name="id" value="@bc.Id" />
+                                                            <input type="submit" value="Generate Barcode" class="btn btn-outline-success btn-sm" />
+                                                        </form>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="text-end">
+                                                            <div class="small text-muted">@bc.Barcode.BarcodeValue</div>
+                                                            <img src="~/@bc.Barcode.BarcodeImagePath" alt="Barcode" style="height:40px;" class="mt-1" />
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+
+
+
+                    <script>
+                        getAddress(@lat, @lng, "@id");
+                    </script>
+                }
+
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <h1 class="text-center mt-5">No bookings found</h1>
+    <h1 class="text-center mt-5">OOPS! No Bookings Found</h1>
+}
+<script>
+    @if (TempData["success"] != null)
+    {
+        <text>toastr.success('@TempData["success"]');</text>
+    }
+    @if (TempData["error"] != null)
+    {
+        <text>toastr.error('@TempData["error"]');</text>
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        $(".ready-btn").on("click", function (e) {
+            var readyBookingId = $("#bookingId").val();
+
+            $.ajax({
+                url: "/Admin/BookingReady",
+                type: "POST",
+                data: { bookingId: readyBookingId},
+                success: function (response) {
+                    console.log(response);
+                    if (response.remaining == "yes") {
+                        toastr.clear();
+                        toastr.error(response.message);
+                        Swal.fire({
+                            title: "",
+                            text: "Are you sure you want to ready this booking?",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: "Yes",
+                            cancelButtonText: 'No',
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $.ajax({
+                                    url: '/Admin/ConfirmReady',
+                                    type: 'POST',
+                                    data: { bookingId: readyBookingId },
+                                    success: function (response) {
+                                        if(response.success == false ){
+                                            Swal.fire({
+                                            title: "OOPS",
+                                            text: response.message,
+                                            icon: 'warning',
+                                            confirmButtonText: 'Okay',
+                                        })
+                                        }else{
+                                             Swal.fire({
+                                            title: "Booking Ready Successfully",
+                                            text: response.message,
+                                            icon: 'success',
+                                            confirmButtonText: 'Okay',
+                                        }).then(() => {
+                                            window.location.reload()
+                                        });
+                                        }
+                                        
+                                    },
+                                    error: function (error) {
+                                        Swal.fire("Error!", "Something went wrong!", "error");
+                                    }
+                                });
+                            }
+                        });
+                    }else if(response.success == true){
+                        Swal.fire({
+                            title: "Booking Ready Successfully",
+                            text: response.message,
+                            icon: 'success',
+                            confirmButtonText: 'Okay',
+                        }).then(() => {
+                                window.location.reload()
+                        });
+                    }else{
+                        Swal.fire({
+                            title: "OOPS",
+                            text: response.message,
+                            icon: 'error',
+                            confirmButtonText: 'Okay',
+                        })
+                    }
+                }
+            })
+        })
+    })
+</script>

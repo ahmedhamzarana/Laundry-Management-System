@@ -1,0 +1,39 @@
+﻿@model List<Laundry.Models.Contact>
+@{
+    int i = 1;
+}
+<h1>Customers</h1>
+<h1 class="mt-4">Users</h1>
+<table class="table-bordered table-hovered table-striped table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Role</th>
+            <th>Created At</th>
+        </tr>
+    </thead>
+    <tbody id="customers">
+        @foreach (var users in Model)
+        {
+            <tr>
+                <td>@i</td>
+                <td>@users.User.Name</td>
+                <td>@users.User.Email</td>
+                <td>@users.Subject</td>
+                <td>@users.Message</td>
+                <td>@users.CreatedAt</td>
+            </tr>
+            i++;
+        }
+    </tbody>
+</table>
+
+<script>
+    @if (TempData["success"] != null)
+    {
+        <text>toastr.success('@TempData["success"]');</text>
+    }
+</script>

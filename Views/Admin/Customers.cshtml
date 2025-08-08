@@ -1,0 +1,111 @@
+﻿@model List<Laundry.Models.Customer>
+@{
+    int i = 0;
+}
+<style>
+    .search-input {
+        float: right;
+        padding: 10px 15px;
+        width: 250px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 25px;
+        outline: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        .search-input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+        }
+
+</style>
+<h1>Customers</h1>
+<h1 class="mt-4">Customers</h1>
+<a asp-controller="Admin" asp-action="AddCustomer" class="btn btn-success btn-sm">Add Customers</a>
+<input type="text" placeholder="Search Customer Here..." id="search" class="search-input" />
+
+<table class="table-bordered table-hovered table-striped table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Registration Date</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody id="customers">
+        @foreach (var customer in Model)
+        {
+            <tr>
+                <td>@i</td>
+                <td>@customer.Name</td>
+                <td>@customer.Address</td>
+                <td>@customer.City</td>
+                <td>@customer.Phone</td>
+                <td>@customer.Email</td>
+                <td>@customer.RegistrationDate</td>
+                <td><a class="btn btn-warning btn-sm" asp-action="EditCustomer" asp-route-id="@customer.Id">Edit</a></td>
+                <td><a class="btn btn-danger btn-sm" asp-action="DeleteCustomer" asp-route-id="@customer.Id">Delete</a></td>
+            </tr>
+            i++;
+        }
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function(){
+        $("#search").on("input", function(e){
+            var search = $("#search").val();
+
+                $.ajax({
+                    url: "/Admin/SearchCustomer",
+                    type: "GET",
+                    data: {search:search},
+                    success: function(response){
+                        // console.log(response);
+                        if(response.customer != null){
+                        $("#customers").empty();
+                        $.each(response.customer, function(key, value){
+                            const action = `/Admin/EditCustomer/${value.id}`;
+                                const action2 = `/Admin/DeleteCustomer/${value.id}`;
+                            var output =
+                                    `
+                                    <tr>
+                                        <td>${value.id}</td>
+                                        <td>${value.name}</td>
+                                        <td>${value.address}</td>
+                                        <td>${value.city}</td>
+                                        <td>${value.phone}</td>
+                                        <td>${value.email}</td>
+                                        <td>${value.registrationDate}</td>
+                                        <td><a href="${action}" class="btn btn-warning">Edit</a></td>
+                                        <td><a href="${action2}" class="btn btn-danger">Delete</a></td>
+                                    </tr>
+                                    `
+                                $("#customers").append(output)
+                        });
+
+                        }
+                    }
+                })
+        })
+    })
+</script>
+
+<script>
+    @if (TempData["success"] != null)
+    {
+        <text>toastr.success('@TempData["success"]');</text>
+    }
+</script>

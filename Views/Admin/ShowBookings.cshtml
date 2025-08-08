@@ -1,0 +1,85 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model List<Laundry.Models.Booking>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    function getAddress(lat, lng, elementId) {
+        $.ajax({
+            url: '/Home/GetAddress',
+            data: {
+                lat: lat,
+                lon: lng
+            },
+            type: 'GET',
+            success: function (res) {
+                $('#' + elementId).text(res.display_name);
+            },
+            error: function () {
+                $('#' + elementId).text("Address not found");
+            }
+        });
+    }
+
+</script>
+
+@if (Model.Any())
+{
+    <div class="main m-5">
+        <h1 class="text-center">Bookings...</h1>
+        <h1 class="text-center mt-4">Bookings...</h1>
+        <table class="table table-striped table-hover table-bordered mt-4">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Location</th>
+                    <th>Pick up Date & Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var bookings in Model)
+                {
+                    var lat = bookings.Latitude;
+                    var lng = bookings.Longitude;
+                    var id = "loc_" + bookings.Id;
+
+                    <tr>
+                        <td>@bookings.Id</td>
+                        <td>@bookings.User.Name</td>
+                        <td>@bookings.User.Email</td>
+                        <td>@bookings.Address</td>
+                        <td id="@id">Loading...</td>
+                        <td>@bookings.Date - @bookings.Time</td>
+                    </tr>
+                    <tr>
+                        <td colspan="6">
+                            <strong>Clothes & Services:</strong>
+                            <ul>
+                                @foreach (var bc in bookings.BookingClothes)
+                                {
+                                    <li>
+                                        @bc.Clothes.Title - @bc.Services.Name
+                                    </li>
+                                }
+                            </ul>
+                        </td>
+                    </tr>
+                    <script>
+                        getAddress(@lat, @lng, "@id");
+                    </script>
+                }
+
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <h1 class="text-center mt-5">No bookings found</h1>
+}

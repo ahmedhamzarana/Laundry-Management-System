@@ -1,0 +1,482 @@
+﻿@{
+
+    Layout = "~/Views/Shared/Layout2.cshtml";
+}
+
+@model Laundry.Models.FetchClothesandServices
+
+<style>
+    .input-number {
+        width: 70px;
+        padding: 6px 10px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background-color: #f9f9f9;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .input-number:focus {
+            border-color: #4a90e2;
+            outline: none;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        /* Optional: Remove arrows for cleaner UI (on Chrome) */
+        .input-number::-webkit-inner-spin-button,
+        .input-number::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-number[type="number"] {
+            -moz-appearance: textfield; /* Firefox */
+        }
+</style>
+
+
+<main>
+    <!--? Hero Start -->
+    <div class="slider-area2 section-bg2 hero-overly" style="background-image: url('/usercdn/assets/img/hero/hero2.png');">
+        <div class="slider-height2 d-flex align-items-center">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="hero-cap hero-cap2">
+                            <h2>Our Services</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Hero End -->
+    <!--? Services Area Start -->
+    <section class="services-area pt-top border-bottom pb-20 mb-60">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xl-7 col-lg-8">
+                    <div class="section-tittle text-center mb-55">
+                        <span class="element">Our Process</span>
+                        <h2>This is how we work</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                @foreach (var services in Model.Services)
+                {
+
+                    <div class="col-lg-4 col-md-6 col-sm-6">
+                        <div class="single-cat text-center">
+                            <div class="cat-icon">
+                                <img src="~/services/@services.Image" height="200" alt="">
+                            </div>
+                            <div class="cat-cap">
+                                <h5><a class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal_@services.Id">@services.Name</a></h5>
+                                <p>@services.Description</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="exampleModal_@services.Id" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModal_@services.Id">Modal title</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+                                    
+
+                                    <!-- 🔹 Select All Checkbox -->
+                                    <div class="form-check mb-3">
+                                        <div style="float: left;">
+                                            <input class="form-check-input" type="checkbox" id="selectAll_@services.Id" onclick="toggleSelectAll(this, '@services.Id')">
+                                            <label class="form-check-label" for="selectAll_@services.Id">
+                                                Select All Clothes for this Service
+                                            </label>
+                                        </div>
+                                        <div style="float: right;"><strong>Rs. @services.Price</strong></div>
+                                    </div>
+
+                                    <!-- 🔸 Clothes Cards -->
+                                    @foreach (var clothes in Model.Clothes.Where(c => c.ClothesServices.Any(cs => cs.ServicesId == services.Id)))
+                                    {
+                                        <div class="card mb-2 p-2">
+                                            <div class="row align-items-center">
+                                                <div class="col-1 text-center">
+                                                    <input type="checkbox"
+                                                           data-service="@clothes.Id"
+                                                           data-title="@clothes.Title"
+                                                           data-max="@clothes.Quantity"
+                                                           data-price="@services.Price"
+                                                           class="form-check-input services clothes-checkbox-@services.Id"
+                                                           name="selectedClothes"
+                                                           value="@clothes.Id" />
+
+
+                                                </div>
+                                                <div class="col-3">
+                                                    <img src="~/clothes/@clothes.Image" class="img-fluid rounded" alt="@clothes.Title" />
+                                                </div>
+                                                <div class="col-8">
+                                                    @* <h6 class="mb-1">@clothes.Title</h6> *@
+                                                    <p class="mb-0"><strong>Title:</strong> <span>@clothes.Title</span></p>
+                                                    @* <p class="mb-0"><strong>Weight:</strong> @clothes.Weight kg</p> *@
+                                                    <p class="mb-0"><strong>Max Quantity:</strong> @clothes.Quantity</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                              
+                                    <div class="container mt-4">
+                                        <h5>Selected Clothes:</h5>
+                                        <table class="table selected-clothes-table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Title</th>
+                                                    @* <th>Weight</th> *@
+                                                    <th>Quantity</th>
+                                                    <th>Remove</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="selected-clothes-body"></tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+
+
+                                
+                            </div>
+                        </div>
+                    </div>
+                }
+                <!-- 🔸 Right Screen Floating Summary (OUTSIDE modal) -->
+                <div class="position-fixed bg-white border shadow p-4 rounded-end"
+                     id="global-summary-panel"
+                     style="top: 80px; right: 0; width: 300px; z-index: 2000; display: none;">
+                    <h5 class="mb-3">🧺 Order Summary</h5>
+                    <p><strong>Total Clothes:</strong> <span class="total-clothes">0</span></p>
+                    <p><strong>Total Quantity:</strong> <span class="total-quantity">0</span></p>
+
+                    <!-- 🔹 Grand Total -->
+                    <div class="mt-4 p-3 bg-primary text-white rounded text-center">
+                        <h4 class="mb-0">Grand Total</h4>
+                        <strong style="font-size: 1.8rem;">
+                            <span class="grand-total">0</span> PKR
+                        </strong>
+
+
+                    </div>
+
+                    <div class="mt-4 p-3 bg-primary text-white rounded text-center">
+
+                        <a href="javascript:void(0);" onclick="submitBookingData()">Book Now</a>
+
+                    </div>
+                </div>
+
+
+
+
+
+            </div>
+    </section>
+    <!-- Services End -->
+    <!--? Offer-services Start  -->
+    <section class="offer-services pb-bottom2">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xl-7 col-lg-8">
+                    <div class="section-tittle text-center mb-55">
+                        <span class="element">Services</span>
+                        <h2>Services we offer</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row no-gutters">
+                <div class="col-lg-6 col-md-6">
+                    <div class="single-offers">
+                        <img src="~/usercdn/assets/img/gallery/offers1.png" alt="" class=" w-100">
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="single-offers">
+                        <img src="~/usercdn/assets/img/gallery/offers2.png" alt="" class=" w-100">
+                        <div class="offers-caption text-center">
+                            <div class="cat-icon">
+                                <img src="~/usercdn/assets/img/icon/offers-icon1.png" alt="">
+                            </div>
+                            <div class="cat-cap">
+                                <h5><a href="services.html">Cloth laundry</a></h5>
+                                <p>The automated process starts as soon as your clothes go into the machine. The outcome is gleaming clothes!!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="single-offers">
+                        <img src="~/usercdn/assets/img/gallery/offers2.png" alt="" class=" w-100">
+                        <div class="offers-caption text-center">
+                            <div class="cat-icon">
+                                <img src="~/usercdn/assets/img/icon/offers-icon1.png" alt="">
+                            </div>
+                            <div class="cat-cap">
+                                <h5><a href="services.html">Cloth ironing</a></h5>
+                                <p>The automated process starts as soon as your clothes go into the machine. The outcome is gleaming clothes!!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="single-offers">
+                        <img src="~/usercdn/assets/img/gallery/offers4.png" alt="" class=" w-100">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Offer-services End  -->
+    <!--? Want To work -->
+    <section class="container">
+        <section class="wantToWork-area" data-background="~/usercdn/assets/img/gallery/section_bg01.png">
+            <div class="wants-wrapper w-padding2">
+                <div class="row align-items-center justify-content-between">
+                    <div class="col-xl-8 col-lg-9 col-md-7">
+                        <div class="wantToWork-caption wantToWork-caption2">
+                            <h2>Call us for a service</h2>
+                            <p>We deliver the goods to the most complicated places on earth</p>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
+    </section>
+    <!-- Want To work End -->
+    <!--? Testimonials_start -->
+    <section class="testimonials-area testimonials-overly  position-relative">
+        <div class="container">
+            <div class="border-bottom section-padding40 ">
+                <div class="row">
+                    <div class="col-xl-12 ">
+                        <!-- testmonial-image -->
+                        <div class="testmonial-nav text-center">
+                            <div class="testmonial-thumb">
+                                <img src="~/usercdn/assets/img/gallery/testimonila1.png" alt="">
+                            </div>
+                            <div class="testmonial-thumb">
+                                <img src="~/usercdn/assets/img/gallery/testimonila2.png" alt="">
+                            </div>
+                            <div class="testmonial-thumb">
+                                <img src="~/usercdn/assets/img/gallery/testimonila3.png" alt="">
+                            </div>
+                            <div class="testmonial-thumb">
+                                <img src="~/usercdn/assets/img/gallery/testimonila2.png" alt="">
+                            </div>
+                        </div>
+                        <div class="testmonial-item-active text-center">
+                            <!-- testimonial-single-items -->
+                            <div class="testmonial-item ">
+                                <p class="pera">The automated process starts as soon as your clothes go into the<br> machine. The outcome is gleaming clothes!</p>
+                                <div class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <p> - Rupaya</p>
+                            </div>
+                            <!-- testimonial-single-items -->
+                            <div class="testmonial-item ">
+                                <p class="pera">The automated process starts as soon as your clothes go into the<br> machine. The outcome is gleaming clothes!</p>
+                                <div class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <p> - Rupaya</p>
+                            </div>
+                            <!-- testimonial-single-items -->
+                            <div class="testmonial-item ">
+                                <p class="pera">The automated process starts as soon as your clothes go into the<br> machine. The outcome is gleaming clothes!</p>
+                                <div class="rating">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <p> - Rupaya</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Testimonials_end -->
+    <!--?  Map Area start  -->
+    <div class="Map-area">
+        <img src="~/usercdn/assets/img/gallery/Map.png" alt="" class="w-100">
+    </div>
+    <!-- Map Area End -->
+</main>
+
+<script>
+    function toggleSelectAll(source, serviceId) {
+        const checkboxes = document.querySelectorAll('.clothes-checkbox-' + serviceId);
+        checkboxes.forEach(cb => cb.checked = source.checked);
+    }
+</script>
+<script>
+    $(document).ready(function () {
+
+        // 🔁 Summary update function
+        function updateSummaryPanel() {
+            let totalClothes = 0, totalQuantity = 0, grandTotal = 0, totalWeight = 0;
+
+            $(".selected-clothes-body tr").each(function () {
+                totalClothes++;
+                const quantity = parseInt($(this).find(".quantity-input").val()) || 1;
+                const price = parseFloat($(this).data("price")) || 0;
+                const weight = parseFloat($(this).data("weight")) || 0;
+
+                totalQuantity += quantity;
+                grandTotal += quantity * price;
+                totalWeight += quantity * weight;
+            });
+
+            $("#global-summary-panel .total-clothes").text(totalClothes);
+            $("#global-summary-panel .total-quantity").text(totalQuantity);
+            $("#global-summary-panel .grand-total").text(grandTotal.toFixed(0));
+            $("#global-summary-panel .total-weight").text(totalWeight.toFixed(2) + " kg");
+        }
+
+        // 🔘 Add/Remove on checkbox toggle
+        $(document).on("change", ".services", function () {
+            const checkbox = $(this);
+            const isChecked = checkbox.is(":checked");
+            const clothId = checkbox.val();
+
+            const card = checkbox.closest(".card");
+            const title = card.find("span").text();
+            @* const originalWeight = parseFloat(card.find("p").eq(0).text().replace("Weight:", "").replace("kg", "").trim()); *@
+            const quantity = card.find("p").eq(1).text().replace("Quantity:", "").trim();
+
+            const tableBody = checkbox.closest(".modal-body").find(".selected-clothes-body");
+
+            if (isChecked) {
+                if (tableBody.find(`tr[data-id="${clothId}"]`).length === 0) {
+                    const maxQty = parseInt(checkbox.data("max")) || 10;
+                    const price = parseFloat(checkbox.data("price")) || 0;
+
+                    const row = `
+                        <tr data-id="${clothId}" data-price="${price}">
+                            <td>${title}</td>
+                            <td>
+                                <input type="number" min="1" value="1" max="${maxQty}" class="input-number quantity-input" />
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger remove-cloth" data-id="${clothId}" style="padding: 4px 8px; font-size: 14px;">X</button>
+                            </td>
+                        </tr>`;
+
+                    tableBody.append(row);
+                }
+            } else {
+                tableBody.find(`tr[data-id="${clothId}"]`).remove();
+            }
+
+            updateSummaryPanel();
+        });
+
+        // 🔄 Update weight when quantity changes
+        $(document).on("input", ".quantity-input", function () {
+            const input = $(this);
+            const quantity = parseInt(input.val()) || 1;
+            const max = parseInt(input.attr("max")) || 10;
+
+            if (quantity > max) {
+                input.val(max);
+                toastr.warning("⚠️ You cannot select more than available quantity.");
+            }
+
+            updateSummaryPanel();
+        });
+
+        // ❌ Remove cloth row
+        $(document).on("click", ".remove-cloth", function () {
+            const clothId = $(this).data("id");
+            $(this).closest("tr").remove();
+            $(`input[type="checkbox"][value="${clothId}"]`).prop("checked", false);
+            updateSummaryPanel();
+        });
+
+        // ✅ Select All Toggle
+        window.toggleSelectAll = function (checkbox, serviceId) {
+            const checkboxes = document.querySelectorAll(`.clothes-checkbox-${serviceId}`);
+            checkboxes.forEach(cb => {
+                if (cb.checked !== checkbox.checked) {
+                    $(cb).trigger("click");
+                }
+            });
+        };
+
+        // Show/hide summary panel on modal open/close
+        $('[id^=exampleModal_]').on('shown.bs.modal', function () {
+            $('#global-summary-panel').fadeIn();
+        });
+
+        $('[id^=exampleModal_]').on('hidden.bs.modal', function () {
+            $('#global-summary-panel').fadeOut();
+        });
+    });
+</script>
+
+<script>
+    function submitBookingData() {
+        const selectedItems = [];
+
+        $("input[type=checkbox].services:checked").each(function () {
+            const clothId = parseInt($(this).val());
+            const serviceId = parseInt($(this).closest(".modal").attr("id").split("_")[1]);
+            const row = $(`.selected-clothes-body tr[data-id='${clothId}']`);
+            const quantity = parseInt(row.find(".quantity-input").val()) || 1;
+
+            selectedItems.push({
+                clothId: clothId,
+                serviceId: serviceId,
+                quantity: quantity
+            });
+        });
+
+        // For debugging - check what's being sent
+        console.log("Sending:", selectedItems);
+
+        $.ajax({
+            url: '/Home/TempStoreBookingData',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(selectedItems),
+            success: function (response) {
+                if (response.success) {
+                    window.location.href = '/Home/Booking';
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+            }
+        });
+    }
+</script>
+
+
+@* </script> *@

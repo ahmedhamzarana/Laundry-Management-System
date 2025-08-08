@@ -1,0 +1,65 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model Laundry.Models.ClothesViewModel
+
+<div class="container-fluid">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">Add Clothes Here...</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label asp-for="Title" class="form-label">Name </label>
+                                <input asp-for="Title" class="form-control">
+                                <span asp-validation-for="Title"></span>
+                                
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Quantity" class="form-label">Quantity </label>
+
+                                <input asp-for="Quantity" class="form-control">
+                                <span asp-validation-for="Quantity"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="Image" class="form-label">Name </label>
+                                <input type="file" asp-for="Image" class="form-control">
+                                <span asp-validation-for="Image"></span>
+                            </div>
+
+                                @foreach (var service in ViewBag.Services as List<Services>)
+                                {
+                                    <label>
+                                    <div class="d-flex">
+                                        <input type="checkbox" name="SelectedServiceIds" value="@service.Id" />
+                                        @service.Name
+                                    </div>
+                                    <span asp-validation-for="SelectedServiceIds"></span>
+                                    </label>
+                                    <br />
+                                }
+
+
+                            <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                        </form>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    <script>
+        @if (TempData["success"] != null)
+        {
+            <text>toastr.success('@TempData["success"]');</text>
+        }
+        @if (TempData["error"] != null)
+        {
+            <text>toastr.error('@TempData["error"]');</text>
+        }
+    </script>
+
+
