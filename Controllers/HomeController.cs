@@ -89,7 +89,7 @@ namespace Laundry.Controllers
 
                         Thank you for registering with Laundry Management System!
 
-                        We’re excited to have you onboard. You can now log in and start using our services.
+                        Weâ€™re excited to have you onboard. You can now log in and start using our services.
 
                         If you have any questions, feel free to contact us anytime.
 
@@ -234,7 +234,7 @@ namespace Laundry.Controllers
             //totalPrice.Where(x => x.Id == 3);
             //ViewData["totalPrice"] = totalPrice;
 
-            ViewBag.PublishableKey = "pk_test_51QC2ODIe4idSW70t3KGivHvvWGDachFhshcM3FC3kUOGiog9iupBTWRzeSR622duJ94Vzpuk034kvUAHK9OdviY100JX1FOvsF";
+            ViewBag.PublishableKey = "your stripe public key";
 
             return View(bookings);
         }
@@ -343,9 +343,9 @@ namespace Laundry.Controllers
                             Your appointment has been successfully scheduled.
 
                             Here are your booking details:
-                            • Date: {booking.Date.ToShortDateString()}
-                            • Time: {booking.Time}
-                            • Address: {booking.Address}
+                            â€¢ Date: {booking.Date.ToShortDateString()}
+                            â€¢ Time: {booking.Time}
+                            â€¢ Address: {booking.Address}
 
                             We look forward to serving you.
 
@@ -381,7 +381,7 @@ namespace Laundry.Controllers
             {
                 return Json(new { success = false, error = "Booking Not Found" });
             }
-            StripeConfiguration.ApiKey = "sk_test_51QC2ODIe4idSW70tDuPsYTghj5mmmTHUbF9PktegF6aT3EkievLJ3NsscCWp6xScUAxAxjGBTsJIw68AGuytkWQj00gzHHR6BL";
+            StripeConfiguration.ApiKey = "your stripe secrete key";
             var bookings = await myDbContext.Bookings.Include(x => x.BookingClothes).ThenInclude(x => x.Services).FirstOrDefaultAsync(x => x.Id == bookingId);
             double totalPrice = bookings.BookingClothes.Sum(x => x.Services.Price);
             //return totalPrice.BookingClothes.Sum(x => x.Services.Price);
